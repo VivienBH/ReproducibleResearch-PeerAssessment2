@@ -1,13 +1,13 @@
 ---
 title: "Basic Analysis About Severe Weather Events With exploring the NOOA Storm Database"
 author: "Vivien B.W. H"
-date: "2015年5月22日"
+date: "2015-5-22"
 output: html_document
 ---
+## **Synopsis**
+In this document, the NOAA [Storm Database](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) is explored and some basic questions about severe weather events are answered.  
 
-In this document, The basic goal of this assignment is to explore the NOAA Storm Database and answer some basic questions about severe weather events.  
-
-The data analysis mainly focuses on the following questions:
+Data analysis mainly focuses on the following questions:
 
 1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
 
@@ -17,16 +17,66 @@ The data analysis mainly focuses on the following questions:
 **NOTES**: This R Markdown document is encoded using UTF-8. May this information helped if not all of the characters in this document shows themselves well.
 
 ## **Data Processing**
+Load required packages and set timezone.
 
 ```{r}
-summary(cars)
+## Required packages
+packages <- c("data.table", "xtable", "ggplot2")
+sapply(packages, require, character.only=TRUE, quietly=TRUE)
+
+## Set Local Timezone as en_US.UTF-8
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
 ```
 
-## **Results**
-You can also embed plots, for example:
+### Download raw data and documentation files
 
-```{r, echo=FALSE}
-plot(cars)
+Download the storm data documentation files.
+
+* National Weather Service [Storm Data Documentation](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+* National Climatic Data Center Storm Events [FAQ](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf)
+
+```{r downloaddocs, cache=TRUE}
+## Check to see if the file exists; if not, make it...
+if (!file.exists("StormDataDocumentation.pdf")) {
+        file.url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf"
+        download.file(file.url, destfile="StormDataDocumentation.pdf", 
+                      method = "curl")
+        }
+
+## Check to see if the file exists; if not, make it...
+if (!file.exists("StormEventsFAQ.pdf")) {
+        file.url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf"
+        download.file(file.url, destfile="StormEventsFAQ.pdf", 
+                      method = "curl")
+        }
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Download the zipped [Storm Data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) [49Mb].
+
+```{r}
+## Check to see if the source data set zip exists; if not, make it...
+if (!file.exists("StormData.csv.bz2")) {
+        ## Download the zip file and load it into R
+        file.url<-'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2'
+        download.file(file.url, destfile="StormData.csv.bz2", 
+                      method = "curl")
+        }
+```
+
+### Load Data into R
+
+Load raw data into R, store it into data table, and take a look.
+
+```{r loaddata, cache=TRUE}
+## Read csv file
+con <- file.path(getwd(), "StormData.csv.bz2")
+dataset <- read.csv(con, stringsAsFactors = FALSE)
+
+## Convert data frame into data table
+dataset <- data.table(dataset)
+
+## Take a look
+str(dataset)
+```
+
+### Clean data
