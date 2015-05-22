@@ -17,7 +17,7 @@ Data analysis mainly focuses on the following questions:
 **NOTES**: This R Markdown document is encoded using UTF-8. May this information helped if not all of the characters in this document shows themselves well.
 
 ## **Data Processing**
-Load required packages and set timezone.
+Load required packages and set timezone to "en_US.UTF-8".
 
 ```{r}
 ## Required packages
@@ -80,3 +80,17 @@ str(dataset)
 ```
 
 ### Clean data
+
+Transform the variables' names to their lowercase for easy coding.
+
+```{r}
+oldNames <- names(dataset)
+lowercaseNames <- tolower(oldNames)
+setnames(dataset, oldNames, lowercaseNames)
+```
+
+Convert variable `bgn_date` to date class to make it calculable.
+
+```{r}
+dataset <- dataset[, bgn_date := mdy_hms(dataset$BGN_DATE, locale = "en_US.UTF-8")]
+```
